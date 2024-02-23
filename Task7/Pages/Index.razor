@@ -1,0 +1,42 @@
+﻿@page "/"
+
+@inject UserConnectionService userConnService
+@inject IJSRuntime jsRuntime
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager navManager
+
+<div class="container">
+    <div class="position-absolute top-50 start-50 translate-middle">
+        <div class="mb-3 text-center">
+            <h3 class="pixelTextMain">Join the party</h3>
+        </div>
+        <div style="width:20rem" class="container align-items-center py-3">
+            <div class="mb-4">
+                <input @bind="model.Username" class="m-0 pixelInput" placeholder="Username" />
+            </div>
+            <div class="mb-3 d-grid gap-2">
+                <button @onclick="Authenticate" class="pixel google"><p>Confirm</p></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private class Model
+    {
+        public string Username { get; set; }
+    }
+
+    private Model model = new Model();
+
+    private async Task Authenticate()
+    {
+        var customAuthStateProvider = (CustomAuthStateProvider)authStateProvider;
+        await customAuthStateProvider.UpdateAuthenticationState(new UserSession
+            {
+                UserName = model.Username,
+            });
+        //кажется тут стоит перенести чела в лобби игр
+        navManager.NavigateTo("/game-lobby", true);
+    }
+}

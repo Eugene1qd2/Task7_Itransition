@@ -1,0 +1,47 @@
+﻿.pixel p {
+    margin: auto;
+    margin-bottom: 10px;
+    color: #00000099;
+    text-align: center;
+    font-family: "Press Start 2P", system-ui;
+    font-weight: 400;
+    font-style: normal;
+}
+
+img {
+    position: relative;
+    z-index: -1;
+    width: 100%;
+}
+
+
+i {
+    color: #FFF;
+    font-size: 3.8em;
+    padding: 0 0 0 .1em;
+}
+
+.pixel {
+    position: relative;
+    width: auto;
+    height: auto;
+    float: left;
+    padding: 40px;
+    box-shadow: inset .313em .313em 0 rgba(255,255,255,0.4), inset -.313em -.313em 0 rgba(0,0,0,0.4), 0 1em 0.625em -.4em rgba(255,255,255,0.8);
+}
+
+    .pixel:active {
+        box-shadow: inset .313em .313em 0 rgba(0,0,0,0.4), inset -.313em -.313em 0 rgba(255,255,255,0.4), 0 1em 0.625em -.4em rgba(255,255,255,0.8);
+    }
+    .pixel:hover {
+        background: #df5a89;
+    }
+
+
+
+.google {
+    background: #ff7aa9;
+    /*background: #D34B5B;*/
+    padding: .6em 0 0 .6em;
+}
+

@@ -1,0 +1,42 @@
+﻿.pixelInput{
+    background:none;
+    border:none;
+    border-bottom:3px solid black;
+    color: #000000CC;
+    font-family: "Press Start 2P", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    width:100%;
+    padding:5px 15px;
+    outline:none;
+}
+
+.pixelInput::placeholder {
+    color: #00000066;
+}
+
+.pixelText {
+    font-family: "Press Start 2P", system-ui;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.pixelTextMain {
+    font-family: "Press Start 2P", system-ui;
+    font-weight: 600;
+    font-style:italic;
+}
+
+.pixelPageBack {
+    background-image: url("images/background.gif");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    width: auto;
+    height: 100vh;
+}
+
+.pixelInput:focus {
+    outline: 2px solid #000000AA;
+    background: #ffffff66;
+}
