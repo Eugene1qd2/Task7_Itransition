@@ -33,15 +33,21 @@ i {
     .pixel:active {
         box-shadow: inset .313em .313em 0 rgba(0,0,0,0.4), inset -.313em -.313em 0 rgba(255,255,255,0.4), 0 1em 0.625em -.4em rgba(255,255,255,0.8);
     }
-    .pixel:hover {
-        background: #df5a89;
-    }
 
+.google:hover {
+    background: #df5a89;
+}
 
+.chatConf:hover {
+    background: #72b9c5;
+}
 
-.google {
-    background: #ff7aa9;
-    /*background: #D34B5B;*/
+.chatConf {
+    background: #92d9e5;
     padding: .6em 0 0 .6em;
 }
 
+.google {
+    background: #ff7aa9;
+    padding: .6em 0 0 .6em;
+}

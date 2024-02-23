@@ -1,22 +1,63 @@
 ﻿@page "/game-lobby"
 @inject NavigationManager navManager
+@implements IAsyncDisposable
 
-<CascadingAuthenticationState>
-    <AuthorizeView>
-        <Authorized>
-            hehe
-        </Authorized>
-        <NotAuthorized>
-            <h1>You should not be here...</h1>
-        </NotAuthorized>
-    </AuthorizeView>
-</CascadingAuthenticationState>
+<div class="pixelPageBack">
+    <div style="background:radial-gradient(circle, rgba(0,212,255,0) 10%, rgba(255,255,255,0.6) 100%); height:100%" class="p-5 pt-3">
+        <PageTitle>Games lobby</PageTitle>
+        <h2 class="pixelTextMain text-center my-4">Game lobbies</h2>
+        <AuthorizeView>
+            <Authorized>
+                <h5 class="pixelTextMain mx-4">Kon ni chi ha, @user.Username</h5>
 
+
+                <div class="position-fixed fixed-bottom">
+                    <div class="position-absolute top-0 start-100 translate-middle sm-box bright-blue-box bg-white align-items-center" style="width:150px; z-index:100; margin-left:-100px;margin-top:10px">
+                        <p class="pixelTextMain m-2 mw-1" style="font-size:10px;">Online: <font color="darkcyan">@chat.CurrentOnline</font></p>
+                    </div>
+                    <div class="box blue-box m-5 mt-0 px-5 py-4 d-flex flex-column z-1">
+                        <div class="d-flex flex-column my-1" style="height:200px;overflow-y:scroll; overflow-x:hidden">
+                            @foreach (var msg in chat.Messages)
+                            {
+
+                                <div class="d-flex">
+                                    @if (msg.Sender != null)
+                                    {
+                                        <p class="pixelText p-0 m-0" style="color:@msg.SenderColor">@msg.Sender: </p>
+                                        <p class="pixelText p-0 m-0" style="word-wrap: normal;width:auto">@msg.Message</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="pixelText p-0 m-0" style="color:@msg.SenderColor">@msg.Message</p>
+                                    }
+                                </div>
+
+
+                            }
+                        </div>
+                        <div class="d-flex justify-content-around mb-4">
+                            <input maxlength="120" type="text" class="pixelInput" style="width:85%" placeholder="Input message" @bind="chat.CurrentMessage" @onkeyup="HandleInput" />
+                            <button class="pixel chatConf px-3" @onclick="SendMessageAsync"><p>Send Message</p></button>
+                        </div>
+                    </div>
+                </div>
+
+            </Authorized>
+            <NotAuthorized>
+                <h1 class="position-absolute top-50 start-50 translate-middle pixelTextMain">You should not be here...</h1>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+</div>
 
 @code {
-    private HubConnection hubConnection;
-    public List<GameLobby> awailableLobbies;
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
 
+    private HubConnection? hubConnection;
+    public List<GameLobby> awailableLobbies;
+    private UserConnection user;
+    public ChatModel chat;
 
     private async Task Connect()
     {
@@ -30,6 +71,69 @@
             StateHasChanged();
         });
 
+        hubConnection.On<MessageModel>("GetLobbyMessage", (message) =>
+        {
+            InvokeAsync(() =>
+            {
+                chat.AppendMessage(message);
+                StateHasChanged();
+            });
+        });
+
+        hubConnection.On<int>("GetCurrentOnline", (currrentOnline) =>
+        {
+            InvokeAsync(() =>
+            {
+                chat.CurrentOnline = currrentOnline;
+                StateHasChanged();
+            });
+        });
+
         await hubConnection.StartAsync();
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        chat = new ChatModel();
+
+        var authState = await authenticationState;
+        if (authState.User.Identity.IsAuthenticated)
+        {
+            user = new UserConnection()
+                {
+                    Username = authState.User.Identity.Name,
+                };
+            Connect();
+
+        }
+    }
+
+    public async Task SendMessageAsync()
+    {
+        if (hubConnection == null)
+            return;
+        if (string.IsNullOrEmpty(chat.CurrentMessage))
+            return;
+
+        await hubConnection.SendAsync("SendLobbyMessage", new MessageModel() { Sender = user.Username, SenderColor = user.ChatColor, Message = chat.CurrentMessage });
+        chat.CurrentMessage = string.Empty;
+    }
+
+    public bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+    private async Task HandleInput(KeyboardEventArgs e)
+    {
+        if (e.Key.Equals("Enter"))
+        {
+            await SendMessageAsync();
+        };
     }
 }
