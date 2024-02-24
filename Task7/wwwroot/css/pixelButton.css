@@ -8,19 +8,6 @@
     font-style: normal;
 }
 
-img {
-    position: relative;
-    z-index: -1;
-    width: 100%;
-}
-
-
-i {
-    color: #FFF;
-    font-size: 3.8em;
-    padding: 0 0 0 .1em;
-}
-
 .pixel {
     position: relative;
     width: auto;

@@ -73,6 +73,22 @@
         pointer-events: none;
     }
 
+.box-button {
+    backface-visibility:hidden;
+    transition: 0.5s;
+    cursor:pointer;
+}
+
+    .box-button:hover {
+        transform: translate(0,-10px) /*rotate(2deg)*/;
+        background-color: #AAAAAA66;
+    }
+
+    .box-button:active {
+        transform: scale(97%);
+        background-color: #AAAAAA66;
+        transition: 0.2s;
+    }
 
 
 .title {
@@ -121,4 +137,17 @@
 
 .gray-box:after {
     border-image: url(https://i.imgur.com/ae4OimG.png) 45 40 stretch;
+}
+
+.pixelSelect {
+    background: #ffffff66;
+    outline: 2px solid #000000AA;
+    border-bottom: 3px solid black;
+    color: #000000CC;
+    font-family: "Press Start 2P", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    width: 100%;
+    font-size:12px;
+    padding: 5px;
 }

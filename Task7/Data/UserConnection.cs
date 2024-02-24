@@ -6,7 +6,7 @@
     {
         public string Id { get; set; }
         public string Username {  get; set; }
-        public GameLobby CurrentLobby {  get; set; }
+        public GameLobbyModel CurrentLobby {  get; set; }
         public string ChatColor {  get; set; }
 
         public UserConnection()
