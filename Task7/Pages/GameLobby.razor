@@ -27,7 +27,7 @@
                     </div>
                     @foreach (var lobby in awailableLobbies)
                     {
-                        var imgPath = lobby.Game == GameType.TicTacToe ? "css/images/background1.jpg" : "css/images/background2.jpg";
+                        var imgPath = lobby.Game == GameType.TicTacToe ? "css/images/ttt.png" : "css/images/background2.jpg";
                         <div @onclick="async (e)=>{await ConnectToGameLobby(e,lobby);}" class="box box-button blue-box m-3 " style="width:250px;">
                             <img class="box-img" src="@imgPath" />
                             <p class="pixelText m-2 mb-0" style="font-size:12px">@lobby.Game</p>

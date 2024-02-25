@@ -10,12 +10,29 @@
             <Authorized>
                 @if (currentLobby != null)
                 {
-                    <p>@currentLobby.Id</p>
-                    <p>@currentLobby.Game</p>
-                    <p>@currentLobby.Owner.Username</p>
-                    <p>@currentLobby.Owner.Id</p>
-                    <p>@currentLobby.Opponent.Username</p>
-                    <p>@currentLobby.GameState</p>
+                    if (gameState == GameState.Started)
+                    {
+
+                        <div class="d-flex justify-content-center">
+                            <h1 class="pixelTextMain m-1" style="color:#e42239;">@currentLobby.Owner.Username</h1>
+                            <h2 class="pixelTextMain m-2">vs</h2>
+                            <h1 class="pixelTextMain m-1" style="color:#3d22e4;">@currentLobby.Opponent.Username</h1>
+                        </div>
+
+                        <div class="d-flex justify-content-center">
+                            @for (int y = 0; y < ticTacToeGame.FIELD_HEIGHT; y++)
+                            {
+                                <div class="justify-content-center">
+                                    @for (int x = 0; x < ticTacToeGame.FIELD_WIDTH; x++)
+                                    {
+                                        int sY = y, sX = x;
+                                        string img = "css/images/" + (ticTacToeGame[x, y] == 1 ? "cross.png" : ticTacToeGame[x, y] == 10 ? "nought.png" : "empty.png");
+                                        <div class="box ttt-box m-2" style="min-width:100px;max-width:200px;" @onclick="(e)=>{MakeGameMove(e,sX,sY);}"><img class="box-img" src="@img" /></div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
                 }
                 else
                 {
@@ -42,6 +59,9 @@
     private UserConnection user;
     public ChatModel chat;
 
+    public GameState gameState { get; set; }
+    public TicTacToeGameModel ticTacToeGame { get; private set; }
+
     private bool isOpened = true;
     private static bool preloaded = true;
 
@@ -49,6 +69,21 @@
     {
         chat = new ChatModel();
         preloaded = true;
+
+        ticTacToeGame = new TicTacToeGameModel();
+        ticTacToeGame.OnCrossWin += (line) =>
+        {
+            jsRuntime.InvokeVoidAsync("alert", "You lost!");
+        };
+        ticTacToeGame.OnNoughtWin += (line) =>
+        {
+            jsRuntime.InvokeVoidAsync("alert", "You won!");
+        };
+        ticTacToeGame.OnDraw += () =>
+        {
+            jsRuntime.InvokeVoidAsync("alert", "Its a DRAW!");
+        };
+
         var authState = await authenticationState;
         if (authState.User.Identity.IsAuthenticated)
         {
@@ -66,6 +101,7 @@
                     {
                         Console.WriteLine("data");
                         currentLobby = lobby;
+                        gameState = GameState.Started;
                         StateHasChanged();
                     });
                 });
@@ -77,7 +113,7 @@
                         {
                             if (preloaded)
                             {
-                                await jsRuntime.InvokeVoidAsync("alert", "OppLeft");
+                                await jsRuntime.InvokeVoidAsync("alert", "Opponent disconnected!");
                                 preloaded = false;
                             }
                             navManager.NavigateTo("/game-lobby");
@@ -85,6 +121,19 @@
                     }
                 });
 
+                //общение ходами
+                hubConnection.On<int, int, bool>("RecieveMove", async (x, y, isCross) =>
+                {
+                    await InvokeAsync(() =>
+                    {
+                        if (currentLobby != null)
+                        {
+                            ticTacToeGame.TryMakeMove(x, y, isCross);
+                            Console.WriteLine("recieved");
+                            StateHasChanged();
+                        }
+                    });
+                });
 
                 await hubConnection.SendAsync("ConnectToLobby", Id, user);
             }
@@ -96,12 +145,24 @@
     }
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection != null && currentLobby!=null)
+        if (hubConnection != null && currentLobby != null)
         {
             await hubConnection.SendAsync("CloseLobby", currentLobby);
             preloaded = false;
             currentLobby = null;
         }
+    }
+    private async Task MakeGameMove(MouseEventArgs e, int x, int y)
+    {
+        if (gameState == GameState.Started)
+            if (!ticTacToeGame.IsCrossToMove)
+            {
+                if (ticTacToeGame.TryMakeMove(x, y, false))
+                {
+                    await hubConnection.SendAsync("MakeMove", currentLobby.Id, x, y, false);
+                    await Console.Out.WriteLineAsync("moved");
+                }
+            }
     }
 }
 

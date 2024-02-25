@@ -13,8 +13,8 @@
     height: 100vh;
 }
 
-.custom-scroll{
-    scrollbar-width: thin; 
+.custom-scroll {
+    scrollbar-width: thin;
     scrollbar-color: pink white;
 }
 
@@ -41,22 +41,22 @@
     height: 100vh;
 }
 
-.pixelInput{
-    background:none;
-    border:none;
-    border-bottom:3px solid black;
+.pixelInput {
+    background: none;
+    border: none;
+    border-bottom: 3px solid black;
     color: #000000CC;
     font-family: "Press Start 2P", system-ui;
     font-weight: 400;
     font-style: normal;
-    width:100%;
-    padding:5px 15px;
-    outline:none;
+    width: 100%;
+    padding: 5px 15px;
+    outline: none;
 }
 
-.pixelInput::placeholder {
-    color: #00000066;
-}
+    .pixelInput::placeholder {
+        color: #00000066;
+    }
 
 .pixelText {
     font-family: "Press Start 2P";
@@ -67,7 +67,7 @@
 .pixelTextMain {
     font-family: "Press Start 2P", system-ui;
     font-weight: 600;
-    font-style:italic;
+    font-style: italic;
 }
 
 .pixelInput:focus {
@@ -99,9 +99,9 @@
     }
 
 .box-button {
-    backface-visibility:hidden;
+    backface-visibility: hidden;
     transition: 0.5s;
-    cursor:pointer;
+    cursor: pointer;
 }
 
     .box-button:hover {
@@ -127,8 +127,7 @@
     width: 100%;
     max-height: 400px;
     object-fit: contain;
-    background: #2e222f;
-    box-shadow: 0 0 100px 0 black inset;
+    box-shadow: 0 0 100px 0 #ffffffaa inset;
 }
 
 .sm-box {
@@ -164,6 +163,20 @@
     border-image: url(https://i.imgur.com/ae4OimG.png) 45 40 stretch;
 }
 
+.ttt-box:after {
+    border-image: url(https://i.imgur.com/6NBEnCD.png) 45 40 stretch;
+}
+
+.ttt-box {
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+    .ttt-box:hover {
+        cursor: pointer;
+        transform: scale(103%);
+    }
+
 .pixelSelect {
     background: #ffffff66;
     outline: 2px solid #000000AA;
@@ -173,6 +186,6 @@
     font-weight: 400;
     font-style: normal;
     width: 100%;
-    font-size:12px;
+    font-size: 12px;
     padding: 5px;
 }

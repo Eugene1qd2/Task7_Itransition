@@ -23,7 +23,8 @@ namespace Task7.Data.Enums
         OwnerWon,
         [Display(Name = "Owner Lost")]
         OwnerLost,
-
+        [Display(Name = "Draw")]
+        Draw,
     }
 
     public static class EnumHelper

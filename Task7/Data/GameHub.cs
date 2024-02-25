@@ -83,5 +83,12 @@ namespace Task7.Data
         {
             await Clients.Group(lobbyModel.Id).SendAsync("RecieveLobbyDataResponse", lobbyModel);
         }
+
+        //общение ходами в лобби
+        public async Task MakeMove(string lobbyId,int x, int y,bool isCross)
+        {
+            await Clients.Group(lobbyId).SendAsync("RecieveMove", x,y,isCross);
+            await Console.Out.WriteLineAsync("moved");
+        }
     }
 }
