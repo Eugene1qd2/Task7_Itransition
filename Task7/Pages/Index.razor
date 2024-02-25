@@ -55,6 +55,7 @@
         await customAuthStateProvider.UpdateAuthenticationState(new UserSession
             {
                 UserName = model.Username,
+                Id = Guid.NewGuid().ToString()
             });
         navManager.NavigateTo("/game-lobby", true);
     }

@@ -11,8 +11,21 @@ namespace Task7.Data.Enums
         BiggerTicTacToe,
         [Display(Name = "Find pair")]
         FindPair
+    }
+
+    public enum GameState
+    {
+        [Display(Name = "Waiting For Opponent")]
+        WaitingForOpponent,
+        [Display(Name = "Started")]
+        Started,
+        [Display(Name = "Owner Won")]
+        OwnerWon,
+        [Display(Name = "Owner Lost")]
+        OwnerLost,
 
     }
+
     public static class EnumHelper
     {
         public static string GetDisplayName(this Enum enumValue)

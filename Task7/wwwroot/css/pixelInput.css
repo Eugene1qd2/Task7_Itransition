@@ -1,4 +1,10 @@
-﻿.pixelPageBackIndex {
+﻿p, h1, h2, h3, h4, h5, h6 {
+    outline: none;
+    color: #202036EE;
+    caret-color: transparent;
+}
+
+.pixelPageBackIndex {
     background-image: url("images/background.gif");
     background-size: cover;
     background-repeat: no-repeat;
@@ -6,6 +12,25 @@
     width: auto;
     height: 100vh;
 }
+
+.custom-scroll{
+    scrollbar-width: thin; 
+    scrollbar-color: pink white;
+}
+
+    .custom-scroll::-webkit-scrollbar {
+        width: 12px; /* width of the entire scrollbar */
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+        background: white; /* color of the tracking area */
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+        background-color: pink; /* color of the scroll thumb */
+        border-radius: 0px; /* roundness of the scroll thumb */
+        border: 1px solid white; /* creates padding around scroll thumb */
+    }
 
 .pixelPageBack {
     background-image: url("images/background_f.jpg");
@@ -34,7 +59,7 @@
 }
 
 .pixelText {
-    font-family: "Press Start 2P", system-ui;
+    font-family: "Press Start 2P";
     font-weight: 400;
     font-style: normal;
 }

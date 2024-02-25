@@ -1,6 +1,7 @@
 ﻿@page "/game-lobby"
 @inject NavigationManager navManager
 @implements IAsyncDisposable
+@inject IJSRuntime jsRuntime
 
 <div class="pixelPageBack">
     <div style="background:radial-gradient(circle, rgba(0,212,255,0) 10%, rgba(255,255,255,0.6) 100%); height:100%" class="p-5 pt-3">
@@ -14,20 +15,20 @@
                         <p class="pixelText m-2 mb-0 mt-3 text-center" style="font-size:14px">New Lobby</p>
                         <p class="pixelText mx-2 mb-0 mt-1" style="font-size:12px">Game type</p>
                         <div class="w-100 px-2 mt-1">
-                            <select class="pixelSelect">
-                                <option>@EnumHelper.GetDisplayName(GameType.TicTacToe)</option>
-                                <option>@EnumHelper.GetDisplayName(GameType.BiggerTicTacToe)</option>
-                                <option>@EnumHelper.GetDisplayName(GameType.FindPair)</option>
+                            <select class="pixelSelect" @bind="newGameType">
+                                <option value="@GameType.TicTacToe">@EnumHelper.GetDisplayName(GameType.TicTacToe)</option>
+                                <option value="@GameType.BiggerTicTacToe">@EnumHelper.GetDisplayName(GameType.BiggerTicTacToe)</option>
+                                <option value="@GameType.FindPair">@EnumHelper.GetDisplayName(GameType.FindPair)</option>
                             </select>
                         </div>
                         <div class="w-100 p-2 mt-3 d-flex justify-content-center">
-                            <button class="pixel google px-3"><p>Create</p></button>
+                            <button class="pixel google px-3" @onclick="CreateNewLobby"><p>Create</p></button>
                         </div>
                     </div>
                     @foreach (var lobby in awailableLobbies)
                     {
                         var imgPath = lobby.Game == GameType.TicTacToe ? "css/images/background1.jpg" : "css/images/background2.jpg";
-                        <div class="box box-button blue-box m-3 " style="width:250px">
+                        <div @onclick="async (e)=>{await ConnectToGameLobby(e,lobby);}" class="box box-button blue-box m-3 " style="width:250px;">
                             <img class="box-img" src="@imgPath" />
                             <p class="pixelText m-2 mb-0" style="font-size:12px">@lobby.Game</p>
                             <p class="pixelText mx-2" style="font-size:12px">Owner: <font color="@lobby.Owner.ChatColor">@lobby.Owner.Username</font></p>
@@ -40,7 +41,7 @@
                         <p class="pixelTextMain m-2 mw-1" style="font-size:10px;">Online: <font color="darkcyan">@chat.CurrentOnline</font></p>
                     </div>
                     <div class="box blue-box m-5 mt-0 px-5 py-4 d-flex flex-column z-1">
-                        <div class="d-flex flex-column my-1" style="height:200px;overflow-y:scroll; overflow-x:hidden">
+                        <div class="d-flex flex-column my-1 custom-scroll" style="height:200px;overflow-y:scroll; overflow-x:hidden" @ref="ChatRef">
                             @foreach (var msg in chat.Messages)
                             {
                                 <div class="d-flex">
@@ -48,6 +49,7 @@
                                     <p class="pixelText p-0 m-0" style="word-wrap: normal;width:auto">@msg.Message</p>
                                 </div>
                             }
+                            <div class="d-flex opacity-0" style="height:20px;width:20px">bottom</div>
                         </div>
                         <div class="d-flex justify-content-around mb-4">
                             <input maxlength="120" type="text" class="pixelInput" style="width:85%" placeholder="Input message" @bind="chat.CurrentMessage" @onkeyup="HandleInput" />
@@ -68,11 +70,15 @@
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
 
-    private HubConnection? hubConnection;
+    [Inject] HubConnection? hubConnection { get; set; }
+
     public List<GameLobbyModel> awailableLobbies;
     private UserConnection user;
     public ChatModel chat;
 
+    public GameType newGameType { get; set; }
+
+    ElementReference ChatRef;
 
     protected override async Task OnInitializedAsync()
     {
@@ -83,34 +89,23 @@
         var authState = await authenticationState;
         if (authState.User.Identity.IsAuthenticated)
         {
-            user = new UserConnection()
+            user = new UserConnection(authState.User.Claims.First(x => x.Type == ClaimTypes.UserData).Value)
                 {
                     Username = authState.User.Identity.Name,
                 };
             await Connect();
         }
-        awailableLobbies.Add(new GameLobbyModel()
-            {
-                Owner = user,
-                Game = GameType.TicTacToe,
-            });
-        awailableLobbies.Add(new GameLobbyModel()
-            {
-                Owner = user,
-                Game = GameType.BiggerTicTacToe,
-            });
     }
 
     private async Task Connect()
     {
-        hubConnection = new HubConnectionBuilder()
-        .WithUrl(navManager.ToAbsoluteUri("/gameshub"))
-        .Build();
-
-        hubConnection.On<GameLobbyModel>("GetHub", (gameLobby) =>
+        hubConnection.On<GameLobbyModel>("NewLobbyCreated", (gameLobby) =>
         {
-            awailableLobbies.Add(gameLobby);
-            StateHasChanged();
+            InvokeAsync(() =>
+            {
+                awailableLobbies.Add(gameLobby);
+                StateHasChanged();
+            });
         });
 
         hubConnection.On<MessageModel>("GetLobbyMessage", (message) =>
@@ -118,6 +113,7 @@
             InvokeAsync(() =>
             {
                 chat.AppendMessage(message);
+                jsRuntime.InvokeVoidAsync("scrollToBottom", ChatRef);
                 StateHasChanged();
             });
         });
@@ -130,9 +126,33 @@
                 StateHasChanged();
             });
         });
-
-        await hubConnection.StartAsync();
-
+        hubConnection.On<GameLobbyModel>("LobbyClosed", (lobby) =>
+        {
+            InvokeAsync(() =>
+            {
+                var nlobby = awailableLobbies.FirstOrDefault(x => x.Id == lobby.Id);
+                if (nlobby != null)
+                {
+                    awailableLobbies.Remove(nlobby);
+                    StateHasChanged();
+                }
+            });
+        });
+        hubConnection.On<string>("RemoveLobby", (lobbyId) =>
+        {
+            InvokeAsync(() =>
+            {
+                var lobby = awailableLobbies.First(x => x.Id == lobbyId);
+                if (lobby != null)
+                {
+                    awailableLobbies.Remove(lobby);
+                    StateHasChanged();
+                }
+            });
+        });
+        if (hubConnection.State == HubConnectionState.Disconnected)
+            await hubConnection.StartAsync();
+        await hubConnection.SendAsync("GetLobbies");
     }
 
     public async Task SendMessageAsync()
@@ -150,10 +170,6 @@
 
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection != null)
-        {
-            await hubConnection.DisposeAsync();
-        }
     }
     private async Task HandleInput(KeyboardEventArgs e)
     {
@@ -161,5 +177,30 @@
         {
             await SendMessageAsync();
         };
+    }
+
+    public async Task NotifyAboutNewLobby(GameLobbyModel newGameLobby)
+    {
+        if (hubConnection == null)
+            return;
+        if (newGameLobby == null)
+            return;
+
+        await hubConnection.SendAsync("CreateNewLobby", newGameLobby);
+    }
+
+    private async Task CreateNewLobby(MouseEventArgs e)
+    {
+        GameLobbyModel newGameLobby = new GameLobbyModel()
+            {
+                Owner = user,
+                Game = newGameType,
+            };
+        NotifyAboutNewLobby(newGameLobby);
+        navManager.NavigateTo($"/game-lobby/tic-tac-toe/{newGameLobby.Id}");
+    }
+    private async Task ConnectToGameLobby(MouseEventArgs e, GameLobbyModel gameLobby)
+    {
+        navManager.NavigateTo($"/game-lobby/tic-tac-toe_/{gameLobby.Id}");
     }
 }

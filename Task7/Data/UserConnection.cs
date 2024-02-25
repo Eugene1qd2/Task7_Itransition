@@ -13,9 +13,13 @@
         {
             ColorGenerator colorGenerator = new ColorGenerator();
             Id= Guid.NewGuid().ToString(); 
-            ChatColor = string.Empty;
             ChatColor = colorGenerator.GenerateColor();
         }
-
+        public UserConnection(string Id)
+        {
+            ColorGenerator colorGenerator = new ColorGenerator();
+            this.Id =Id;
+            ChatColor = colorGenerator.GenerateColor();
+        }
     }
 }

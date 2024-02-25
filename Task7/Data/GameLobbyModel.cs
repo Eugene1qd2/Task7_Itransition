@@ -10,14 +10,21 @@ namespace Task7.Data
     public class GameLobbyModel
     {
         public UserConnection Owner { get; set; }
+        public UserConnection Opponent { get; set; }
         public string Id { get; set; }
         public GameType Game { get; set; }
-        public List<string> memberNames { get; set; }
+
+        public GameState GameState { get; set; }
 
         public GameLobbyModel()
         {
             Id = Guid.NewGuid().ToString();
-            memberNames = new List<string>();
+            Opponent = new UserConnection();
+        }
+        public GameLobbyModel(string Id)
+        {
+            this.Id = Id;
+            Opponent = new UserConnection();
         }
     }
 }

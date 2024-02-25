@@ -24,7 +24,8 @@ namespace Task7.Authentication
                     return await Task.FromResult(new AuthenticationState(_anonymous));
                 var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
             {
-                new Claim(ClaimTypes.Name,userSession.UserName)
+                new Claim(ClaimTypes.Name,userSession.UserName),
+                new Claim(ClaimTypes.UserData,userSession.Id),
             }, "CustomAuth"));
                 return await Task.FromResult(new AuthenticationState(claimsPrincipal));
             }
@@ -43,7 +44,8 @@ namespace Task7.Authentication
                 await _sessionStorage.SetAsync("UserSession", userSession);
                 claimsPrincipal=new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name,userSession.UserName)
+                    new Claim(ClaimTypes.Name,userSession.UserName),
+                    new Claim(ClaimTypes.UserData,userSession.Id),
                 }));
             }
             else
